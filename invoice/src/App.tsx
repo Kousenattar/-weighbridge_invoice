@@ -17,6 +17,7 @@ import CreatePurchasePage from './pages/CreatePurchasePage';
 import EditPurchasePage from './pages/EditPurchasePage';
 import PurchaseDetailPage from './pages/PurchaseDetailPage';
 import GSTAnalysisPage from './pages/GSTAnalysisPage';
+import CombinedAnalysisPage from './pages/CombinedAnalysisPage';
 import EstimatesPage from './pages/EstimatesPage';
 import CreateEstimatePage from './pages/CreateEstimatePage';
 import EstimateDetailPage from './pages/EstimateDetailPage';
@@ -40,6 +41,18 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     );
   }
   return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
+}
+
+/** Only GST-panel users can access this route; others get sent to /dashboard */
+function GSTRoute({ children }: { children: React.ReactNode }) {
+  const { isGSTPanel } = useAuth();
+  return isGSTPanel ? <>{children}</> : <Navigate to="/dashboard" replace />;
+}
+
+/** Only Non-GST-panel users can access this route; others get sent to /dashboard */
+function NonGSTRoute({ children }: { children: React.ReactNode }) {
+  const { isGSTPanel } = useAuth();
+  return !isGSTPanel ? <>{children}</> : <Navigate to="/dashboard" replace />;
 }
 
 function AppRoutes() {
@@ -66,10 +79,19 @@ function AppRoutes() {
         <Route path="purchases/new" element={<CreatePurchasePage />} />
         <Route path="purchases/:id" element={<PurchaseDetailPage />} />
         <Route path="purchases/:id/edit" element={<EditPurchasePage />} />
-        <Route path="gst-analysis" element={<GSTAnalysisPage />} />
         <Route path="estimates" element={<EstimatesPage />} />
         <Route path="estimates/new" element={<CreateEstimatePage />} />
         <Route path="estimates/:id" element={<EstimateDetailPage />} />
+
+        {/* GST-panel only */}
+        <Route path="gst-analysis" element={
+          <GSTRoute><GSTAnalysisPage /></GSTRoute>
+        } />
+
+        {/* Non-GST-panel only */}
+        <Route path="combined-analysis" element={
+          <NonGSTRoute><CombinedAnalysisPage /></NonGSTRoute>
+        } />
       </Route>
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>

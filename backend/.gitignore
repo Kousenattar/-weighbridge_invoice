@@ -1,0 +1,14 @@
+node_modules
+dist
+
+# Environment files — NEVER commit these (contain API keys & DB passwords)
+.env
+.env.local
+.env.production
+
+# PDF output folder
+pdfs/
+
+# OS files
+.DS_Store
+Thumbs.db

@@ -9,6 +9,7 @@ import {
   Plus, Search, Download, Eye, Copy, Trash2, Filter, X,
   FileText, ChevronLeft, ChevronRight, Edit2
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, string> = { draft: 'badge-draft', sent: 'badge-sent', paid: 'badge-paid', cancelled: 'badge-cancelled' };
@@ -18,8 +19,13 @@ function StatusBadge({ status }: { status: string }) {
 export default function InvoicesPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { isGSTPanel } = useAuth();
   const [page, setPage] = useState(1);
-  const [filters, setFilters] = useState({ invoice_number: '', client_name: '', invoice_type: '', from_date: '', to_date: '' });
+  const [filters, setFilters] = useState({
+    invoice_number: '', client_name: '',
+    invoice_type: isGSTPanel ? '' : 'NON_GST',
+    from_date: '', to_date: ''
+  });
   const [showFilters, setShowFilters] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
@@ -78,12 +84,14 @@ export default function InvoicesPage() {
               onChange={e => setFilters(f => ({ ...f, invoice_number: e.target.value }))} />
             <input className="input-field" placeholder="Client Name" value={filters.client_name}
               onChange={e => setFilters(f => ({ ...f, client_name: e.target.value }))} />
-            <select className="input-field" value={filters.invoice_type}
-              onChange={e => setFilters(f => ({ ...f, invoice_type: e.target.value }))}>
-              <option value="">All Types</option>
-              <option value="GST">GST</option>
-              <option value="NON_GST">Non-GST</option>
-            </select>
+            {isGSTPanel && (
+              <select className="input-field" value={filters.invoice_type}
+                onChange={e => setFilters(f => ({ ...f, invoice_type: e.target.value }))}>
+                <option value="">All Types</option>
+                <option value="GST">GST</option>
+                <option value="NON_GST">Non-GST</option>
+              </select>
+            )}
             <input type="date" className="input-field" value={filters.from_date}
               onChange={e => setFilters(f => ({ ...f, from_date: e.target.value }))} />
             <input type="date" className="input-field" value={filters.to_date}

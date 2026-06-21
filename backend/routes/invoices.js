@@ -16,16 +16,22 @@ const router = express.Router();
 const pdfDir = path.join(__dirname, '..', 'pdfs');
 if (!fs.existsSync(pdfDir)) fs.mkdirSync(pdfDir, { recursive: true });
 
+// ─── Panel scope helper ───────────────────────────────────────────────────────
+// GST panel → only GST invoices; Non-GST panel → only NON_GST invoices
+function panelFilter(user) {
+  return user?.panel === 'non_gst' ? { invoice_type: 'NON_GST' } : { invoice_type: 'GST' };
+}
+
 // @GET /api/invoices
 router.get('/', protect, async (req, res) => {
   try {
     const { 
-      invoice_type, gst_type, status, client_name, gst_number, 
+      gst_type, status, client_name, gst_number, 
       invoice_number, from_date, to_date, page = 1, limit = 20 
     } = req.query;
     
-    const query = {};
-    if (invoice_type) query.invoice_type = invoice_type;
+    // Always scope to the user's panel — invoice_type filter from query is ignored
+    const query = { ...panelFilter(req.user) };
     if (gst_type) query.gst_type = gst_type;
     if (status) query.status = status;
     if (invoice_number) query.invoice_number = { $regex: invoice_number, $options: 'i' };
@@ -34,8 +40,6 @@ router.get('/', protect, async (req, res) => {
       if (from_date) query.invoice_date.$gte = new Date(from_date);
       if (to_date) query.invoice_date.$lte = new Date(to_date + 'T23:59:59');
     }
-    
-    let invoiceQuery = Invoice.find(query).populate('client');
     
     // Filter by client name or GST
     if (client_name || gst_number) {
@@ -65,34 +69,36 @@ router.get('/', protect, async (req, res) => {
 // @GET /api/invoices/dashboard
 router.get('/dashboard', protect, async (req, res) => {
   try {
-    const totalInvoices = await Invoice.countDocuments();
-    const gstInvoices = await Invoice.countDocuments({ invoice_type: 'GST' });
+    const pf = panelFilter(req.user); // { invoice_type: 'GST' } or { invoice_type: 'NON_GST' }
+
+    const totalInvoices  = await Invoice.countDocuments(pf);
+    const gstInvoices    = await Invoice.countDocuments({ invoice_type: 'GST' });
     const nonGstInvoices = await Invoice.countDocuments({ invoice_type: 'NON_GST' });
     
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+    const endOfMonth   = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
     
     const monthlySalesResult = await Invoice.aggregate([
-      { $match: { invoice_date: { $gte: startOfMonth, $lte: endOfMonth }, status: { $ne: 'cancelled' } } },
+      { $match: { ...pf, invoice_date: { $gte: startOfMonth, $lte: endOfMonth }, status: { $ne: 'cancelled' } } },
       { $group: { _id: null, total: { $sum: '$grand_total' } } }
     ]);
     const monthlySales = monthlySalesResult[0]?.total || 0;
     
-    const recentInvoices = await Invoice.find()
+    const recentInvoices = await Invoice.find(pf)
       .populate('client', 'client_name gst_number state')
       .sort({ createdAt: -1 })
       .limit(5);
     
-    // Monthly chart data (last 6 months)
+    // Monthly chart data (last 6 months) — scoped to panel
     const monthlyData = [];
     for (let i = 5; i >= 0; i--) {
       const d = new Date();
       d.setMonth(d.getMonth() - i);
       const start = new Date(d.getFullYear(), d.getMonth(), 1);
-      const end = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59);
+      const end   = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59);
       const result = await Invoice.aggregate([
-        { $match: { invoice_date: { $gte: start, $lte: end }, status: { $ne: 'cancelled' } } },
+        { $match: { ...pf, invoice_date: { $gte: start, $lte: end }, status: { $ne: 'cancelled' } } },
         { $group: { _id: null, total: { $sum: '$grand_total' }, count: { $sum: 1 } } }
       ]);
       monthlyData.push({
@@ -301,15 +307,14 @@ router.get('/:id/pdf', protect, async (req, res) => {
 // @GET /api/invoices/reports/summary
 router.get('/reports/summary', protect, async (req, res) => {
   try {
-    const { from_date, to_date, type } = req.query;
-    const match = {};
+    const { from_date, to_date } = req.query;
+    // Always scope to the user's panel — never mix types
+    const match = { ...panelFilter(req.user) };
     if (from_date || to_date) {
       match.invoice_date = {};
       if (from_date) match.invoice_date.$gte = new Date(from_date);
       if (to_date) match.invoice_date.$lte = new Date(to_date + 'T23:59:59');
     }
-    if (type === 'GST') match.invoice_type = 'GST';
-    if (type === 'NON_GST') match.invoice_type = 'NON_GST';
     match.status = { $ne: 'cancelled' };
     
     const summary = await Invoice.aggregate([

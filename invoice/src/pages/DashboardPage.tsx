@@ -8,6 +8,7 @@ import {
   ArrowUpRight, Eye, Download, BarChart3, IndianRupee
 } from 'lucide-react';
 import type { DashboardData, Invoice } from '../types';
+import { useAuth } from '../context/AuthContext';
 
 function StatCard({ title, value, sub, icon: Icon, gradient, trend }: any) {
   return (
@@ -39,6 +40,7 @@ function StatusBadge({ status }: { status: string }) {
 
 export default function DashboardPage() {
   const navigate = useNavigate();
+  const { isGSTPanel } = useAuth();
   const { data, isLoading } = useQuery({
     queryKey: ['dashboard'],
     queryFn: () => invoicesApi.getDashboard(),
@@ -66,7 +68,9 @@ export default function DashboardPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-800 font-['Outfit']">Dashboard</h1>
-          <p className="text-gray-500 text-sm mt-1">Welcome to GST Billing Management</p>
+          <p className="text-gray-500 text-sm mt-1">
+            {isGSTPanel ? 'GST Billing Management' : 'Non-GST Invoice Management'}
+          </p>
         </div>
         <button className="btn-primary" onClick={() => navigate('/invoices/new')}>
           <Plus size={16} />
@@ -75,7 +79,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className={`grid grid-cols-2 ${isGSTPanel ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-4`}>
         <StatCard
           title="Total Invoices"
           value={d?.totalInvoices || 0}
@@ -83,20 +87,32 @@ export default function DashboardPage() {
           gradient="#2563eb"
           trend={12}
         />
-        <StatCard
-          title="GST Invoices"
-          value={d?.gstInvoices || 0}
-          sub="Tax invoices generated"
-          icon={CheckCircle}
-          gradient="#10b981"
-        />
-        <StatCard
-          title="Non-GST Invoices"
-          value={d?.nonGstInvoices || 0}
-          sub="Simple bills"
-          icon={XCircle}
-          gradient="#f59e0b"
-        />
+        {isGSTPanel ? (
+          <StatCard
+            title="GST Invoices"
+            value={d?.gstInvoices || 0}
+            sub="Tax invoices generated"
+            icon={CheckCircle}
+            gradient="#10b981"
+          />
+        ) : (
+          <StatCard
+            title="Non-GST Invoices"
+            value={d?.nonGstInvoices || 0}
+            sub="Simple bills"
+            icon={XCircle}
+            gradient="#f59e0b"
+          />
+        )}
+        {isGSTPanel && (
+          <StatCard
+            title="Non-GST Invoices"
+            value={d?.nonGstInvoices || 0}
+            sub="Simple bills"
+            icon={XCircle}
+            gradient="#f59e0b"
+          />
+        )}
         <StatCard
           title="Monthly Sales"
           value={formatCurrency(d?.monthlySales || 0)}
@@ -146,12 +162,17 @@ export default function DashboardPage() {
         <div className="card p-6">
           <h2 className="font-bold text-gray-800 font-['Outfit'] mb-4">Quick Actions</h2>
           <div className="space-y-3">
-            {[
+            {(isGSTPanel ? [
               { label: 'New GST Invoice', desc: 'CGST + SGST or IGST', icon: FileText, color: '#2563eb', action: () => navigate('/invoices/new?type=GST') },
-              { label: 'New Non-GST Invoice', desc: 'Simple billing', icon: FileText, color: '#10b981', action: () => navigate('/invoices/new?type=NON_GST') },
               { label: 'View All Invoices', desc: 'Manage invoices', icon: BarChart3, color: '#8b5cf6', action: () => navigate('/invoices') },
+              { label: 'GST Analysis', desc: 'Output vs input tax', icon: TrendingUp, color: '#10b981', action: () => navigate('/gst-analysis') },
               { label: 'Reports', desc: 'GST & Sales reports', icon: TrendingUp, color: '#f59e0b', action: () => navigate('/reports') },
-            ].map((a, i) => (
+            ] : [
+              { label: 'New Invoice', desc: 'Simple billing', icon: FileText, color: '#10b981', action: () => navigate('/invoices/new') },
+              { label: 'View All Invoices', desc: 'Manage invoices', icon: BarChart3, color: '#8b5cf6', action: () => navigate('/invoices') },
+              { label: 'Combined Analysis', desc: 'GST & Non-GST report', icon: TrendingUp, color: '#0d9488', action: () => navigate('/combined-analysis') },
+              { label: 'Reports', desc: 'Sales reports', icon: TrendingUp, color: '#f59e0b', action: () => navigate('/reports') },
+            ]).map((a, i) => (
               <button
                 key={i}
                 onClick={a.action}

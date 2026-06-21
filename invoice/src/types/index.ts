@@ -3,6 +3,7 @@ export interface User {
   name: string;
   email: string;
   role: 'admin' | 'user';
+  panel: 'gst' | 'non_gst';
   createdAt: string;
 }
 

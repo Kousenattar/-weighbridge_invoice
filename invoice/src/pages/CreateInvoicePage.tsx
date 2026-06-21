@@ -9,6 +9,7 @@ import { calculateGST, numberToWords, getStateFromGST, INDIAN_STATES, formatCurr
 import { Plus, Trash2, Search, ChevronDown } from 'lucide-react';
 import toast from 'react-hot-toast';
 import type { Client, CompanySettings } from '../types';
+import { useAuth } from '../context/AuthContext';
 
 const itemSchema = z.object({
   item_name: z.string().min(1, 'Required'),
@@ -40,9 +41,16 @@ export default function CreateInvoicePage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
-  const initType = (searchParams.get('type') as 'GST' | 'NON_GST') || 'GST';
+  const { isGSTPanel } = useAuth();
 
-  const [step, setStep] = useState<'type' | 'form'>(searchParams.get('type') ? 'form' : 'type');
+  // Non-GST panel always creates NON_GST invoices; skip the type-selection screen
+  const initType = isGSTPanel
+    ? ((searchParams.get('type') as 'GST' | 'NON_GST') || 'GST')
+    : 'NON_GST';
+
+  const [step, setStep] = useState<'type' | 'form'>(
+    !isGSTPanel || searchParams.get('type') ? 'form' : 'type'
+  );
   const [gstLookup, setGstLookup] = useState('');
   const [lookingUp, setLookingUp] = useState(false);
   const [clientSuggestions, setClientSuggestions] = useState<Client[]>([]);
@@ -187,6 +195,7 @@ export default function CreateInvoicePage() {
     });
   };
 
+  // Type selection screen — shown only for GST panel, and only shows GST Invoice card
   if (step === 'type') {
     return (
       <div className="max-w-2xl mx-auto fade-in">
@@ -194,18 +203,15 @@ export default function CreateInvoicePage() {
           <h1 className="text-2xl font-bold text-gray-800 font-['Outfit']">Create New Invoice</h1>
           <p className="text-gray-500 mt-1">Choose the invoice type to proceed</p>
         </div>
-        <div className="grid grid-cols-2 gap-6">
-          {[
-            { type: 'GST', title: 'GST Invoice', desc: 'With CGST+SGST or IGST tax', color: '#2563eb', emoji: '🧾' },
-            { type: 'NON_GST', title: 'Non-GST Invoice', desc: 'Simple bill without tax', color: '#10b981', emoji: '📄' },
-          ].map(({ type, title, desc, color, emoji }) => (
-            <button key={type} onClick={() => { setValue('invoice_type', type as any); setStep('form'); }}
-              className="card p-8 text-center hover:scale-105 transition-all cursor-pointer border-2 border-transparent hover:border-blue-300">
-              <div className="text-5xl mb-4">{emoji}</div>
-              <div className="text-xl font-bold text-gray-800 mb-2">{title}</div>
-              <div className="text-gray-500 text-sm">{desc}</div>
-            </button>
-          ))}
+        <div className="flex justify-center">
+          <button
+            onClick={() => { setValue('invoice_type', 'GST'); setStep('form'); }}
+            className="card p-8 text-center hover:scale-105 transition-all cursor-pointer border-2 border-transparent hover:border-blue-300 max-w-xs w-full"
+          >
+            <div className="text-5xl mb-4">🧾</div>
+            <div className="text-xl font-bold text-gray-800 mb-2">GST Invoice</div>
+            <div className="text-gray-500 text-sm">With CGST+SGST or IGST tax</div>
+          </button>
         </div>
       </div>
     );
@@ -218,9 +224,11 @@ export default function CreateInvoicePage() {
           <h1 className="text-2xl font-bold text-gray-800 font-['Outfit']">
             {watchedType === 'GST' ? 'GST Invoice' : 'Non-GST Invoice'}
           </h1>
-          <button type="button" onClick={() => setStep('type')} className="text-blue-600 text-sm hover:underline mt-1">
-            ← Change type
-          </button>
+          {isGSTPanel && (
+            <button type="button" onClick={() => setStep('type')} className="text-blue-600 text-sm hover:underline mt-1">
+              ← Change type
+            </button>
+          )}
         </div>
         <div className="flex gap-3">
           <button type="button" onClick={() => navigate('/invoices')} className="btn-outline">Cancel</button>

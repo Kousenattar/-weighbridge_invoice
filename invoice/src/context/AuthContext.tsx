@@ -9,6 +9,7 @@ interface AuthContextType {
   logout: () => void;
   isLoading: boolean;
   isAuthenticated: boolean;
+  isGSTPanel: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -52,8 +53,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
   };
 
+  const isGSTPanel = !user || user.panel !== 'non_gst';
+
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, isLoading, isAuthenticated: !!user }}>
+    <AuthContext.Provider value={{ user, token, login, logout, isLoading, isAuthenticated: !!user, isGSTPanel }}>
       {children}
     </AuthContext.Provider>
   );

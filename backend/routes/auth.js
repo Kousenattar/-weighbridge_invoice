@@ -12,14 +12,39 @@ const generateToken = (id) => {
 // @POST /api/auth/register
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, panel } = req.body;
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ success: false, message: 'Email already registered' });
     }
-    const user = await User.create({ name, email, password, role: role || 'user' });
+    const user = await User.create({
+      name,
+      email,
+      password,
+      role: role || 'user',
+      panel: panel || 'gst',
+    });
     const token = generateToken(user._id);
     res.status(201).json({ success: true, token, user });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// @PUT /api/auth/update-panel  — admin use: fix a user's panel
+router.put('/update-panel', protect, async (req, res) => {
+  try {
+    const { email, panel } = req.body;
+    if (!['gst', 'non_gst'].includes(panel)) {
+      return res.status(400).json({ success: false, message: 'panel must be gst or non_gst' });
+    }
+    const user = await User.findOneAndUpdate(
+      { email },
+      { panel },
+      { new: true }
+    );
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+    res.json({ success: true, message: `Panel updated to ${panel}`, user });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
