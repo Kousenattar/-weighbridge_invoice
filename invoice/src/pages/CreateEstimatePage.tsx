@@ -46,7 +46,7 @@ export default function CreateEstimatePage() {
 
   const { register, control, handleSubmit, watch, setValue, formState: { errors } } =
     useForm<FormData>({
-      resolver: zodResolver(estimateSchema),
+      resolver: zodResolver(estimateSchema) as any,
       defaultValues: {
         estimate_date: new Date().toISOString().split('T')[0],
         gst_type:  'CGST_SGST',

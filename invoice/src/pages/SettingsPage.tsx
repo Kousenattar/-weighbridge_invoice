@@ -41,7 +41,7 @@ export default function SettingsPage() {
   const settings: CompanySettings = data?.data;
 
   const { register, control, handleSubmit, formState: { errors } } = useForm<FormData>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema) as any,
     values: settings ? {
       ...settings,
       terms: (settings.terms || []).map((t: string) => ({ value: t })),

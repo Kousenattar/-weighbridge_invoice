@@ -64,7 +64,7 @@ export default function CreateInvoicePage() {
   const company: CompanySettings = settingsData?.data;
 
   const { register, control, handleSubmit, watch, setValue, formState: { errors } } = useForm<FormData>({
-    resolver: zodResolver(invoiceSchema),
+    resolver: zodResolver(invoiceSchema) as any,
     defaultValues: {
       invoice_type: initType,
       gst_type: 'CGST_SGST',

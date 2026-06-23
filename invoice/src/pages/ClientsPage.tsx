@@ -25,7 +25,7 @@ type ClientForm = z.infer<typeof clientSchema>;
 function ClientModal({ client, onClose }: { client: Client | null; onClose: () => void }) {
   const queryClient = useQueryClient();
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<ClientForm>({
-    resolver: zodResolver(clientSchema),
+    resolver: zodResolver(clientSchema) as any,
     defaultValues: client ? {
       client_name: client.client_name, gst_number: client.gst_number,
       address: client.address, state: client.state, state_code: client.state_code,

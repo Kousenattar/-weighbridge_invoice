@@ -49,7 +49,7 @@ export default function EditPurchasePage() {
 
   const { register, control, handleSubmit, watch, setValue, reset, formState: { errors } } =
     useForm<FormData>({
-      resolver: zodResolver(purchaseSchema),
+      resolver: zodResolver(purchaseSchema) as any,
       defaultValues: {
         gst_type: 'NONE',
         cgst_rate: 9,

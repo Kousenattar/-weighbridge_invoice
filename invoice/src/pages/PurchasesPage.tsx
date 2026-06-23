@@ -67,7 +67,7 @@ function exportToExcel(purchases: Purchase[], filters: Record<string, string>) {
     'Grand Total (₹)': purchases.reduce((s, p) => s + (Number(p.grand_total) || 0), 0),
     'Notes': '',
   };
-  allRows.push(totalsRow);
+  allRows.push(totalsRow as any);
 
   const ws1 = XLSX.utils.json_to_sheet(allRows);
 

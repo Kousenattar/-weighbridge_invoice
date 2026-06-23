@@ -52,7 +52,7 @@ export default function EditInvoicePage() {
   const invoice = invData?.data;
 
   const { register, control, handleSubmit, watch, setValue, reset, formState: { errors } } = useForm<FormData>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema) as any,
     defaultValues: {
       invoice_type: 'GST',
       gst_type: 'CGST_SGST',

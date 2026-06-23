@@ -238,7 +238,7 @@ export default function CreatePurchasePage() {
 
   const { register, control, handleSubmit, watch, setValue, reset, formState: { errors } } =
     useForm<FormData>({
-      resolver: zodResolver(purchaseSchema),
+      resolver: zodResolver(purchaseSchema) as any,
       defaultValues: {
         purchase_date: new Date().toISOString().split('T')[0],
         gst_type:  'NONE',
