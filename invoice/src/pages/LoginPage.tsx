@@ -113,10 +113,10 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <div className="mt-4 p-3 rounded-lg text-xs text-blue-200" style={{ background: 'rgba(255,255,255,0.05)' }}>
+          {/* <div className="mt-4 p-3 rounded-lg text-xs text-blue-200" style={{ background: 'rgba(255,255,255,0.05)' }}>
             <strong className="text-white">Demo credentials:</strong><br />
             Email: admin@gst.com | Password: admin123
-          </div>
+          </div> */}
         </div>
       </div>
     </div>
