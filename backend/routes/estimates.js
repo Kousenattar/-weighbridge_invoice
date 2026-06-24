@@ -224,12 +224,12 @@ router.get('/:id/pdf', protect, async (req, res) => {
     const estimate = await Estimate.findById(req.params.id);
     if (!estimate) return res.status(404).json({ success: false, message: 'Estimate not found' });
 
-    const company    = await CompanySettings.findOne() || {};
+    const company = await CompanySettings.findOne() || {};
     const pdfBuffer  = await generateQuotationPDF(
       estimate.toObject(),
       company.toObject ? company.toObject() : company
     );
-
+    
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="${estimate.estimate_number}.pdf"`);
     res.send(pdfBuffer);

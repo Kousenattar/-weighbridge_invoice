@@ -154,33 +154,43 @@ export default function ClientsPage() {
             </button>
           </div>
         ) : (
-          <table className="data-table">
-            <thead>
-              <tr><th>Client Name</th><th>GST Number</th><th>State</th><th>Mobile</th><th>GST Status</th><th>Added</th><th>Actions</th></tr>
-            </thead>
-            <tbody>
-              {clients.map(c => (
-                <tr key={c._id}>
-                  <td><div className="font-semibold text-gray-800">{c.client_name}</div>{c.trade_name && <div className="text-xs text-gray-400">{c.trade_name}</div>}</td>
-                  <td><span className="font-mono text-xs bg-gray-100 px-2 py-0.5 rounded">{c.gst_number || '—'}</span></td>
-                  <td>{c.state || '—'} {c.state_code && <span className="text-xs text-gray-400">({c.state_code})</span>}</td>
-                  <td className="text-gray-600">{c.mobile || '—'}</td>
-                  <td>
-                    <span className={`badge ${c.is_gst_registered ? 'badge-gst' : 'badge-non-gst'}`}>
-                      {c.is_gst_registered ? 'GST Reg.' : 'Non-GST'}
-                    </span>
-                  </td>
-                  <td className="text-gray-400 text-xs">{c.createdAt ? formatDate(c.createdAt) : '—'}</td>
-                  <td>
-                    <div className="flex gap-1">
-                      <button onClick={() => setModal({ open: true, client: c })} className="p-1.5 rounded text-blue-600 hover:bg-blue-50"><Edit2 size={14} /></button>
-                      <button onClick={() => setDeleteId(c._id)} className="p-1.5 rounded text-red-600 hover:bg-red-50"><Trash2 size={14} /></button>
-                    </div>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="data-table min-w-full">
+              <thead>
+                <tr>
+                  <th className="whitespace-nowrap">Client Name</th>
+                  <th className="whitespace-nowrap">GST Number</th>
+                  <th className="whitespace-nowrap">State</th>
+                  <th className="whitespace-nowrap">Mobile</th>
+                  <th className="whitespace-nowrap">GST Status</th>
+                  <th className="whitespace-nowrap">Added</th>
+                  <th className="whitespace-nowrap">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {clients.map(c => (
+                  <tr key={c._id}>
+                    <td className="whitespace-nowrap"><div className="font-semibold text-gray-800">{c.client_name}</div>{c.trade_name && <div className="text-xs text-gray-400">{c.trade_name}</div>}</td>
+                    <td className="whitespace-nowrap"><span className="font-mono text-xs bg-gray-100 px-2 py-0.5 rounded">{c.gst_number || '—'}</span></td>
+                    <td className="whitespace-nowrap">{c.state || '—'} {c.state_code && <span className="text-xs text-gray-400">({c.state_code})</span>}</td>
+                    <td className="text-gray-600 whitespace-nowrap">{c.mobile || '—'}</td>
+                    <td className="whitespace-nowrap">
+                      <span className={`badge ${c.is_gst_registered ? 'badge-gst' : 'badge-non-gst'}`}>
+                        {c.is_gst_registered ? 'GST Reg.' : 'Non-GST'}
+                      </span>
+                    </td>
+                    <td className="text-gray-400 text-xs whitespace-nowrap">{c.createdAt ? formatDate(c.createdAt) : '—'}</td>
+                    <td className="whitespace-nowrap">
+                      <div className="flex gap-1">
+                        <button onClick={() => setModal({ open: true, client: c })} className="p-1.5 rounded text-blue-600 hover:bg-blue-50"><Edit2 size={14} /></button>
+                        <button onClick={() => setDeleteId(c._id)} className="p-1.5 rounded text-red-600 hover:bg-red-50"><Trash2 size={14} /></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 

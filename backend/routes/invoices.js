@@ -293,7 +293,8 @@ router.get('/:id/pdf', protect, async (req, res) => {
     if (!invoice) return res.status(404).json({ success: false, message: 'Invoice not found' });
     
     const company = await CompanySettings.findOne() || {};
-    const pdfBuffer = await generatePDF(invoice.toObject(), company.toObject ? company.toObject() : company, invoice.client.toObject ? invoice.client.toObject() : invoice.client);
+    const clientData = invoice.client ? (invoice.client.toObject ? invoice.client.toObject() : invoice.client) : {};
+    const pdfBuffer = await generatePDF(invoice.toObject(), company.toObject ? company.toObject() : company, clientData);
     
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="${invoice.invoice_number}.pdf"`);
@@ -308,8 +309,8 @@ router.get('/:id/pdf', protect, async (req, res) => {
 router.get('/reports/summary', protect, async (req, res) => {
   try {
     const { from_date, to_date } = req.query;
-    // Always scope to the user's panel — never mix types
-    const match = { ...panelFilter(req.user) };
+    // Allow non_gst panel (combined analysis) to see all invoices. GST panel only sees GST invoices.
+    const match = req.user?.panel === 'non_gst' ? {} : { ...panelFilter(req.user) };
     if (from_date || to_date) {
       match.invoice_date = {};
       if (from_date) match.invoice_date.$gte = new Date(from_date);

@@ -1,5 +1,6 @@
 import api from './client';
 import type { User } from '../types';
+import toast from 'react-hot-toast';
 
 export const authApi = {
   login: async (email: string, password: string) => {
@@ -84,13 +85,27 @@ export const invoicesApi = {
     return res.data;
   },
   downloadPDF: async (id: string, invoiceNumber: string) => {
-    const res = await api.get(`/invoices/${id}/pdf`, { responseType: 'blob' });
-    const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${invoiceNumber}.pdf`;
-    link.click();
-    window.URL.revokeObjectURL(url);
+    try {
+      const res = await api.get(`/invoices/${id}/pdf`, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `${invoiceNumber}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error: any) {
+      console.error('PDF download error:', error);
+      let errorMsg = 'Failed to download PDF. Please try again.';
+      if (error.response?.data instanceof Blob) {
+        try {
+          const text = await error.response.data.text();
+          errorMsg = JSON.parse(text).message || errorMsg;
+        } catch (e) {}
+      }
+      toast.error(errorMsg);
+    }
   },
   getReportsSummary: async (params?: Record<string, any>) => {
     const res = await api.get('/invoices/reports/summary', { params });
@@ -163,13 +178,20 @@ export const estimatesApi = {
     return res.data;
   },
   downloadPDF: async (id: string, estimateNumber: string) => {
-    const res = await api.get(`/estimates/${id}/pdf`, { responseType: 'blob' });
-    const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${estimateNumber}.pdf`;
-    link.click();
-    window.URL.revokeObjectURL(url);
+    try {
+      const res = await api.get(`/estimates/${id}/pdf`, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `${estimateNumber}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error: any) {
+      console.error('PDF download error:', error);
+      toast.error('Failed to download PDF. Please try again.');
+    }
   },
 };
 

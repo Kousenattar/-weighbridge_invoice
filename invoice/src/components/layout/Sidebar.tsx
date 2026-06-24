@@ -154,7 +154,7 @@ export default function Sidebar({ darkMode, onToggleDark }: SidebarProps) {
     <>
       {/* Mobile Hamburger */}
       <button
-        className="fixed top-3 left-3 z-[300] md:hidden bg-white rounded-xl p-2.5 shadow-lg border border-gray-100"
+        className="fixed top-3 left-3 z-[300] md:hidden bg-white rounded-xl p-2.5 shadow-lg border border-gray-100 no-print"
         onClick={() => setMobileOpen(v => !v)}
         aria-label="Toggle menu"
       >

@@ -181,7 +181,7 @@ export default function InvoiceDetailPage() {
 
   return (
     <div className="space-y-4 fade-in">
-      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 no-print">
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <button onClick={() => navigate('/invoices')} className="btn-outline p-2 flex-shrink-0"><ArrowLeft size={16} /></button>
           <div className="min-w-0">
@@ -194,7 +194,6 @@ export default function InvoiceDetailPage() {
           <button onClick={() => window.print()} className="btn-outline flex items-center gap-1.5 whitespace-nowrap text-xs sm:text-sm"><Printer size={13} /> Print</button>
           <button onClick={() => navigate(`/invoices/${id}/edit`)} className="btn-outline flex items-center gap-1.5 whitespace-nowrap text-xs sm:text-sm" style={{ borderColor: '#6366f1', color: '#6366f1' }}><Edit2 size={13} /> Edit</button>
           <button onClick={() => duplicateMutation.mutate()} className="btn-outline flex items-center gap-1.5 whitespace-nowrap text-xs sm:text-sm"><Copy size={13} /> Duplicate</button>
-          <button onClick={() => invoicesApi.downloadPDF(invoice._id, invoice.invoice_number)} className="btn-primary flex items-center gap-1.5 whitespace-nowrap text-xs sm:text-sm"><Download size={13} /> PDF</button>
           <button onClick={() => deleteMutation.mutate()} className="btn-danger flex items-center gap-1.5 whitespace-nowrap text-xs sm:text-sm"><Trash2 size={13} /> Delete</button>
         </div>
       </div>
