@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { estimatesApi } from '../api';
 import { formatCurrency } from '../utils';
-import { Plus, Search, Download, Eye, Trash2, ClipboardList, FileText } from 'lucide-react';
+import { Plus, Search, Eye, Trash2, ClipboardList, FileText, Printer } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const STATUS_COLORS: Record<string, string> = {
@@ -24,7 +24,6 @@ export default function EstimatesPage() {
   const [search,  setSearch]  = useState('');
   const [status,  setStatus]  = useState('');
   const [page,    setPage]    = useState(1);
-  const [downloading, setDownloading] = useState<string | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ['estimates', search, status, page],
@@ -39,18 +38,6 @@ export default function EstimatesPage() {
     },
     onError: () => toast.error('Failed to delete estimate'),
   });
-
-  const handleDownload = async (est: any) => {
-    setDownloading(est._id);
-    try {
-      await estimatesApi.downloadPDF(est._id, est.estimate_number);
-      toast.success('PDF downloaded!');
-    } catch {
-      toast.error('Could not generate PDF');
-    } finally {
-      setDownloading(null);
-    }
-  };
 
   const handleDelete = (id: string) => {
     if (!window.confirm('Delete this estimate?')) return;
@@ -189,16 +176,12 @@ export default function EstimatesPage() {
                             <Eye size={15} />
                           </button>
                           <button
-                            id={`dl-est-${est._id}`}
-                            onClick={() => handleDownload(est)}
-                            title="Download PDF"
-                            disabled={downloading === est._id}
-                            className="p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
+                            id={`print-est-${est._id}`}
+                            onClick={() => navigate(`/estimates/${est._id}?print=true`)}
+                            title="Print"
+                            className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
                           >
-                            {downloading === est._id
-                              ? <span className="w-3.5 h-3.5 border-2 border-emerald-300 border-t-emerald-600 rounded-full animate-spin block" />
-                              : <Download size={15} />
-                            }
+                            <Printer size={15} />
                           </button>
                           <button
                             id={`del-est-${est._id}`}
@@ -239,8 +222,8 @@ export default function EstimatesPage() {
                     <button onClick={() => navigate(`/estimates/${est._id}`)} className="btn-outline text-xs py-1 px-3 flex-1 justify-center flex items-center gap-1">
                       <Eye size={12} /> View
                     </button>
-                    <button onClick={() => handleDownload(est)} disabled={downloading === est._id} className="btn-primary text-xs py-1 px-3 flex-1 justify-center flex items-center gap-1">
-                      <Download size={12} /> PDF
+                    <button onClick={() => navigate(`/estimates/${est._id}?print=true`)} className="btn-outline text-xs py-1 px-3 flex-1 justify-center flex items-center gap-1">
+                      <Printer size={12} /> Print
                     </button>
                     <button onClick={() => handleDelete(est._id)} className="p-2 text-red-400 hover:bg-red-50 rounded-lg">
                       <Trash2 size={13} />
