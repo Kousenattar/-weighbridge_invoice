@@ -87,10 +87,28 @@ export const invoicesApi = {
   downloadPDF: async (id: string, invoiceNumber: string) => {
     try {
       const res = await api.get(`/invoices/${id}/pdf`, { responseType: 'blob' });
-      const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+      const blob = new Blob([res.data], { type: 'application/pdf' });
+      const filename = `${invoiceNumber}.pdf`;
+
+      // Try Web Share API for mobile devices
+      if (navigator.canShare && navigator.canShare({ files: [new File([blob], filename, { type: 'application/pdf' })] })) {
+        try {
+          await navigator.share({
+            files: [new File([blob], filename, { type: 'application/pdf' })],
+            title: filename,
+          });
+          return;
+        } catch (e) {
+          console.log('Share failed or cancelled, falling back to download', e);
+        }
+      }
+
+      // Fallback to standard download
+      const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `${invoiceNumber}.pdf`);
+      link.setAttribute('download', filename);
+      link.setAttribute('target', '_blank');
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -180,10 +198,28 @@ export const estimatesApi = {
   downloadPDF: async (id: string, estimateNumber: string) => {
     try {
       const res = await api.get(`/estimates/${id}/pdf`, { responseType: 'blob' });
-      const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+      const blob = new Blob([res.data], { type: 'application/pdf' });
+      const filename = `${estimateNumber}.pdf`;
+
+      // Try Web Share API for mobile devices
+      if (navigator.canShare && navigator.canShare({ files: [new File([blob], filename, { type: 'application/pdf' })] })) {
+        try {
+          await navigator.share({
+            files: [new File([blob], filename, { type: 'application/pdf' })],
+            title: filename,
+          });
+          return;
+        } catch (e) {
+          console.log('Share failed or cancelled, falling back to download', e);
+        }
+      }
+
+      // Fallback to standard download
+      const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `${estimateNumber}.pdf`);
+      link.setAttribute('download', filename);
+      link.setAttribute('target', '_blank');
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
