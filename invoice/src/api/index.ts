@@ -94,7 +94,7 @@ export const invoicesApi = {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      setTimeout(() => window.URL.revokeObjectURL(url), 1000);
     } catch (error: any) {
       console.error('PDF download error:', error);
       let errorMsg = 'Failed to download PDF. Please try again.';
@@ -187,7 +187,7 @@ export const estimatesApi = {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      setTimeout(() => window.URL.revokeObjectURL(url), 1000);
     } catch (error: any) {
       console.error('PDF download error:', error);
       toast.error('Failed to download PDF. Please try again.');
