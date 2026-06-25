@@ -314,6 +314,18 @@ export default function EstimateDetailPage() {
     queryFn:  () => settingsApi.get(),
   });
 
+  const est = data?.data;
+  const company = settingsData?.data;
+
+  useEffect(() => {
+    if (shouldPrint && est && company) {
+      const timer = setTimeout(() => {
+        window.print();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [shouldPrint, est, company]);
+
   const updateStatusMutation = useMutation({
     mutationFn: (status: string) => estimatesApi.update(id!, { ...est, items: est.items, status }),
     onSuccess: () => {
@@ -365,7 +377,7 @@ export default function EstimateDetailPage() {
     );
   }
 
-  if (isError || !data?.data) {
+  if (isError || !est) {
     return (
       <div className="text-center py-12">
         <p className="text-gray-500">Estimate not found.</p>
@@ -373,18 +385,6 @@ export default function EstimateDetailPage() {
       </div>
     );
   }
-
-  const est = data.data;
-  const company = settingsData?.data;
-
-  useEffect(() => {
-    if (shouldPrint && est && company) {
-      const timer = setTimeout(() => {
-        window.print();
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [shouldPrint, est, company]);
 
   return (
     <div className="space-y-4 fade-in">
